@@ -8,8 +8,8 @@ from tqdm import tqdm
 from scipy import stats
 import dask.array as da
 
-from score_utils import *
-from sparse_utils import *
+from utils.score_utils import *
+from utils.sparse_utils import *
 
 from numba import jit, njit, prange
 

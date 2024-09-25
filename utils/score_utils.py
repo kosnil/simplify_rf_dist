@@ -6,7 +6,7 @@ import multiprocessing
 from joblib import Parallel, delayed
 import gc
 
-from sparse_utils import *
+from utils.sparse_utils import *
 
 from tqdm import tqdm
 
