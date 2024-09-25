@@ -41,38 +41,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 from RF import RandomForestWeight
 
 import openml
-#%%
-n = int(1e5)
-draws = np.random.normal(0, 1, n)
-draws.sort()
-cdf = np.cumsum(np.repeat(1 / n, len(draws)))
 
-y = -1.1
-ind = np.linspace(draws.min(), draws.max(), n)
-
-ind = np.where(ind > y, 1, 0.)
-
-fig, ax = plt.subplots(nrows=1, ncols=1, figsize=set_size(fraction=1.))
-
-ax.plot(draws, cdf, color=blue, label='Predicted CDF')
-ax.plot(draws, ind, color=green, ls='--', label='Outcome')
-ax.fill_between(draws, ind, cdf, color=grey, alpha=.2)
-
-# ax.arrow(1, 0.2, -1.5, -0.1, head_width=0.06, head_length=0.1, color=grey)
-# ax.annotate(
-#     'a polar annotation',
-#     xy=(-.8, .1),  # theta, radius
-#     xytext=(.5, .3),  # fraction, fraction
-#     textcoords=r'$\text{CRPS} = Area^2$',
-#     arrowprops=dict(facecolor='black', shrink=0.05),
-#     horizontalalignment='left',
-#     verticalalignment='bottom')
-
-ax.set_xlabel(r"$x$")
-ax.set_ylabel(r"$F(x)$")
-ax.legend()
-
-# fig.savefig(f'./Plots/openml/crps_example.pdf', dpi=500, bbox_inches='tight')
 #%%
 all_ids = list(range(44132, 44149)) + [44026, 44027, 44028] + [45032, 45034]
 all_ids.remove(44135)
@@ -87,7 +56,6 @@ ds_names = [ds.name for ds in all_ds]
 ds_names_paper = [ds.name for ds in paper_ds]
 
 #%%
-
 OVERVIEW = True
 
 if OVERVIEW:
@@ -159,10 +127,6 @@ for i, ds in enumerate(paper_ds):
     if ds.name == 'sulfur':
         X = X.drop(columns=['y2'])
 
-    # if len(X) < 100_000:
-    #     print('Skipping', ds.name, 'due to size')
-    #     continue
-
     if ds.name == 'delays_zurich_transport':
         if SHALLOW is True:
             if os.path.exists(cwd + f'/data/delays_zurich_transport_randixs004.pkl'):
@@ -206,27 +170,6 @@ for i, ds in enumerate(paper_ds):
     y_test = y_test.astype(np.float32)
 
     if HP_TUNING is True:
-        # if ds.name == 'year':
-
-        #     hyperparams = {
-        #         'n_estimators': 1000,
-        #         'min_samples_split': 6,
-        #         'min_samples_leaf': 3,
-        #         'max_features': 0.333,
-        #         'max_depth': 80
-        #     }
-
-        # elif ds.name == 'delays_zurich_transport':
-
-        #     hyperparams = {
-        #         'n_estimators': 1000,
-        #         'min_samples_split': 4,
-        #         'min_samples_leaf': 7,
-        #         'max_features': 'sqrt',
-        #         'max_depth': 70
-        #     }
-
-        # else:
 
         rf = RandomForestRegressor(criterion='squared_error', n_jobs=12 if len(y_train) > 100_000 else -1)
 
@@ -234,13 +177,10 @@ for i, ds in enumerate(paper_ds):
             'random_state': [SEED],
             'max_depth': [None],
             'min_samples_leaf': [1, 2, 4, 6, 8, 10, 15, 20, 30, 40, 50],
-            'min_samples_split': [5],  #[2, 5, 8, 11, 14, 17],
+            'min_samples_split': [5], 
             'n_estimators': [1000],
             'max_features': [0.333, 'sqrt', 0.5, 1.0] if BAGGED_TREES is True else [0.333, 'sqrt', 0.5],
         }
-
-        # if len(y_train) > 200_000:
-        #     hp_params['n_estimators'] = [1000]
 
         print("Starting hyperparameter tuning...")
 
@@ -303,35 +243,6 @@ for i, ds in enumerate(paper_ds):
     rf.fit(X_train, y_train)
 
     print("RF trained...")
-    # batch_size = 2
-
-    # w_hat = da.from_array(rf.get_rf_weights2(X_test), chunks=(batch_size, len(X_train)))
-
-    # num_batches = len(X_test) // batch_size
-
-    # results_ds = []
-    # for batch_idx in tqdm(range(num_batches)):
-
-    #     start_idx = batch_idx * batch_size
-    #     end_idx = (batch_idx + 1) * batch_size
-    #     X_test_batch = X_test[start_idx:end_idx]
-    #     y_test_batch = y_test[start_idx:end_idx]
-
-    #     # Continue with the rest of the code
-
-    #     results_batch = topk_looper(X_train=X_train,
-    #                             X_test=X_test_batch,
-    #                             y_train=y_train,
-    #                             y_test=y_test_batch,
-    #                             rf=rf,
-    #                             w_hat=w_hat[start_idx:end_idx,:].compute(),
-    #                             k_max=TOP_K_MAX,
-    #                             chunk=False,
-    #                             batch_size=0,
-    #                             num_processes=20,
-    #                             verbose=False)
-
-    #     results_ds.append(results_batch)
 
     if sparse_loop is True:
         gc.collect()
@@ -385,8 +296,6 @@ for i, ds in enumerate(paper_ds):
             y_test=y_test,
             rf=rf,
             k_max=TOP_K_MAX,
-            #  chunk=True,
-            #  batch_size=7000,
             num_processes=NO_PROCESSES,
             verbose=True)
 
@@ -397,283 +306,8 @@ for i, ds in enumerate(paper_ds):
         pickle.dump(results_ds, file)
 
     del results_ds
-    # break
-#%%
-import gc
+    
 
-gini_coef = {}
-w_nonzero_rel = {}
-w_nonzero = {}
-
-for i, ds in enumerate(all_ds):
-
-    print(ds.name, 'target:', ds.default_target_attribute)
-
-    X, y, _, _ = ds.get_data(target=ds.default_target_attribute, dataset_format="dataframe")
-
-    if ds.name == 'sulfur':
-        X = X.drop(columns=['y2'])
-
-    # if len(X) < 100_000:
-    #     print('Skipping', ds.name, 'due to size')
-    #     continue
-
-    if ds.name == 'delays_zurich_transport':
-        rand_idxs = np.random.choice(len(X), size=int(len(X) * 0.2), replace=False)
-        X = X.iloc[rand_idxs]
-        y = y.iloc[rand_idxs]
-
-    df_train, df_test, y_train, y_test = train_test_split(X, y.values, test_size=TEST_SIZE, random_state=SEED)
-
-    X_train = df_train.values
-    X_test = df_test.values
-
-    print(f'Dataset split. X_train shape: {X_train.shape}, X_test shape: {X_test.shape}')
-
-    sparse_loop = True if len(y) > 150_000 else False
-
-    del X, y
-    del df_train, df_test
-
-    gc.collect()
-
-    y_train = y_train.astype(np.float32)
-    y_test = y_test.astype(np.float32)
-
-    if HP_TUNING is True:
-        if ds.name == 'year':
-
-            hyperparams = {
-                'n_estimators': 1000,
-                'min_samples_split': 6,
-                'min_samples_leaf': 3,
-                'max_features': 0.333,
-                'max_depth': 80
-            }
-
-        elif ds.name == 'delays_zurich_transport':
-
-            hyperparams = {
-                'n_estimators': 1000,
-                'min_samples_split': 4,
-                'min_samples_leaf': 7,
-                'max_features': 'sqrt',
-                'max_depth': 70
-            }
-
-        else:
-
-            rf = RandomForestRegressor(n_jobs=12 if len(y_train) > 100_000 else -1)
-
-            hp_params = {
-                'max_depth': [50, 60, 70, 80, 90, None],
-                'min_samples_leaf': [1, 3, 5, 7],
-                'min_samples_split': [2, 4, 6, 8, 10, 12],
-                'n_estimators': [1000, 2000],
-                'max_features': [0.333, 'sqrt'],
-            }
-
-            if len(y_train) > 200_000:
-                hp_params['n_estimators'] = [1000]
-
-            print("Starting hyperparameter tuning...")
-
-            cv_jobs = 12 if len(y_train) < 100_000 else 2
-            no_cv = 5 if len(y_train) < 100_000 else 3
-
-            clf = RandomizedSearchCV(rf,
-                                     hp_params,
-                                     random_state=SEED,
-                                     n_jobs=cv_jobs,
-                                     n_iter=20,
-                                     verbose=True,
-                                     cv=no_cv,
-                                     scoring='neg_mean_squared_error')
-            search = clf.fit(X_train, y_train)
-            hyperparams = search.best_params_
-
-            del rf
-            del clf
-            del search
-
-        print('Done with hyperparameter tuning. Best params: ', hyperparams)
-    else:
-        hyperparams = dict(
-            n_estimators=N_TREES,
-            random_state=SEED,
-            n_jobs=-1,
-            max_features='sqrt',
-            min_samples_split=5,
-        )
-
-    if sparse_loop is True:
-
-        continue
-        gc.collect()
-
-        if HP_TUNING is True:
-            weight_path = cwd + '/weight_storage/rf_' + ds.name + '_weights_hptuned.npz'
-        else:
-            weight_path = cwd + '/weight_storage/rf_' + ds.name + '_weights.npz'
-
-        w_all = load_npz(weight_path).todense()
-        print("Weights loaded...")
-
-    else:
-        rf = RandomForestWeight(hyperparams=hyperparams, name='rf_' + ds.name)
-        rf.fit(X_train, y_train)
-        w_all = rf.get_rf_weights2(X_test)
-
-    gin = gini_mat(w_all).mean()
-
-    w_nonzero_rel[ds.name] = (np.count_nonzero(w_all, axis=1) / w_all.shape[1]).mean()
-    w_nonzero[ds.name] = np.count_nonzero(w_all, axis=1).mean()
-    gini_coef[ds.name] = gin
-
-    # break
-#%%
-import gc
-
-TEST_SIZE = 0.3
-NO_PROCESSES = 1
-
-TOP_K_MAX = 200
-N_TREES = 1000
-
-ds = paper_ds[10]  #5:california housing
-print(ds.name, 'target:', ds.default_target_attribute)
-
-X, y, _, _ = ds.get_data(target=ds.default_target_attribute, dataset_format="dataframe")
-
-df_train, df_test, y_train, y_test = train_test_split(X, y.values, test_size=TEST_SIZE, random_state=SEED)
-#%%
-
-X_train = df_train.values
-X_test = df_test.values
-
-gc.collect()
-
-y_train = y_train.astype(np.float32)
-y_test = y_test.astype(np.float32)
-
-hyperparams = dict(
-    n_estimators=N_TREES,
-    random_state=SEED,
-    n_jobs=-1,
-    max_features='sqrt',
-    min_samples_split=5,
-)
-
-rf = RandomForestWeight(hyperparams=hyperparams, name='rf_' + ds.name)
-rf.fit(X_train, y_train)
-
-# w_all_sparse = load_npz(cwd + '/weight_storage/rf_' + ds.name + '_weights.npz').tocsr()
-# w_all = rf.get_rf_weights2(X_test)
-
-#%%
-results_ds = topk_looper(X_test=X_test,
-                         y_train=y_train,
-                         y_test=y_test,
-                         rf=rf,
-                         k_max=5,
-                         num_processes=NO_PROCESSES,
-                         verbose=True)
-#%%
-w_all = rf.get_rf_weights2(X_test)
-
-k = 5
-
-row_idx = np.argpartition(w_all, -k, axis=1)[:, -k:]
-i = np.indices(row_idx.shape)[0]
-
-w_tmp = np.zeros(w_all.shape, dtype=np.float32)
-
-w_tmp[i, row_idx] = w_all[i, row_idx]
-
-w_topk_sums = w_tmp.sum(axis=1)
-w_k = w_tmp / w_topk_sums[:, None]
-
-idx_sort = np.argsort(y_train)
-y_sort = y_train[idx_sort]
-
-ecdfs = np.cumsum(w_all[:, idx_sort], axis=1)
-ecdfs_k = np.cumsum(w_k[:, idx_sort], axis=1)
-#%%
-
-test_i = 5531
-
-fig, ax = plt.subplots(nrows=1, ncols=1, figsize=set_size(fraction=1.5))
-
-ax.plot(np.round(np.exp(y_sort), 2), ecdfs[test_i], color=blue, label='Full')
-#ax.plot(np.round(np.exp(y_sort), 2), ecdfs_k[test_i], color=och, label='Top5')
-
-# locs, labels = ax.get_xticks()
-
-# step_size = int(len(y_sort) / 5)
-
-# locs = np.arange(0, len(y_train), step_size)
-# labels = np.round(np.concatenate(([0], np.exp(y_sort[::step_size]))), 2)
-
-ax.axvline(np.exp(y_test[0]), color=red, ls='--', label='Obs.')
-
-ax.set_ylabel(r'$\hat F(x)$')
-ax.set_xlabel("House Price")
-ax.set_title("Forecast Distribution for a Test Case (California Housing)")
-ax.legend()
-
-fig.savefig(f'./Plots/openml/forecast_dist_california_housing_full_obs.pdf', dpi=500, bbox_inches='tight')
-#%%
-ik = np.where(w_k[test_i] > 0)[0]
-a = df_train.iloc[ik].copy()
-
-a['w'] = w_k[test_i][ik]
-
-print(a.sort_values('w', ascending=False).to_latex(float_format="%.2f"))
-print(df_test.iloc[test_i].to_latex(float_format="%.2f"))
-#%%
-
-# argpartition sparse: https://stackoverflow.com/questions/49207275/finding-the-top-n-values-in-a-row-of-a-scipy-sparse-matrix
-# csr explained https://stackoverflow.com/questions/52299420/scipy-csr-matrix-understand-indptr
-# sparse cumcum https://stackoverflow.com/questions/45492626/scipy-sparse-cumsum
-# https://stackoverflow.com/questions/15896588/how-to-change-elements-in-sparse-matrix-in-pythons-scipy
-
-#%%
-cmap = plt.get_cmap('Reds')
-y_hat = rf.predict(X_test)
-# Extract 5 colors from the colormap
-colors = [cmap(i / 5) for i in range(6)][1:]
-
-dataset_idx = 8
-
-pred5 = np.stack(results[dataset_idx]['pred'])
-
-plt.figure(figsize=(20, 20))
-plt.plot([9, 15], [9, 15], color='black', zorder=-2, ls=':')
-for i in range(len(y_test)):
-    plt.plot(pred5[[k - 1 for k in considered_ks]][:, i],
-             np.repeat(y_test[i], 5),
-             ls='-',
-             color='grey',
-             alpha=.7,
-             linewidth=2,
-             zorder=-1)
-for i in range(len(y_test)):
-    plt.scatter(pred5[[k - 1 for k in considered_ks]][:, i], np.repeat(y_test[i], 5), s=10, marker='o', c=colors)
-# plt.ylim(9.4, 13.5)
-# plt.xlim(9.4, 13.5)
-plt.ylim(6.4, 12.7)
-plt.xlim(6.4, 12.7)
-
-# plt.scatter(y_hat, y_test, s=10, marker='o', c='steelblue', alpha=.2)
-
-import matplotlib.patches as mpatches
-
-patches = [mpatches.Patch(color=c, label=f'k={k_i}') for c, k_i in zip(colors, considered_ks)]
-plt.legend(handles=patches)
-
-plt.xlabel("Prediction at k=(3,5,10,20,50)")
-plt.ylabel("(True) Outcome")
-plt.title(used_ds[dataset_idx])
 # %%
 results = []
 used_ds = []
@@ -761,18 +395,10 @@ for i, ds in enumerate(used_ds):
         df_results[ds][f'{loss_label} Top{k} Skill'] = 1 - results[i][loss][k - 1].mean() / results[i][loss][-1].mean()
         df_results[ds][f'{loss_label} Top{k} Rel'] = (results[i][loss][k - 1].mean() / results[i][loss][-1].mean())
     df_results[ds]['Best k'] = int(np.argmin(results[i][loss].mean(1)) + 1)
-    # df_results[ds]['n_train'] = int(df_overview.loc[ds]['Length'] *
-    #                                 (1 - TEST_SIZE)) if ds != 'delays_zurich_transport' else int(
-    #                                     df_overview.loc[ds]['Length'] * 0.2 * (1 - TEST_SIZE))
+
     df_results[ds]['Best k'] = '> 200' if df_results[ds]['Best k'] == len(
         results[i][loss]) else df_results[ds]['Best k']
 df_results = pd.DataFrame(df_results).T
-
-# if results[i][loss].shape[0] == 201:
-#     df_results['Best k'] = df_results['Best k'].replace(201, 'full')
-# if results[i][loss].shape[0] == 101:
-#     print("Replacing 101")
-#     df_results['Best k'] = df_results['Best k'].replace(101, 'full')
 
 print(df_results[[col for col in df_results.columns if "Skill" not in col]].to_latex(float_format="%.4f"))
 #%%
@@ -790,9 +416,7 @@ format_map = {
     f'{loss_label} Top10 Rel': "{:.2f}",
     f'{loss_label} Top20 Rel': "{:.2f}",
     f'{loss_label} Top50 Rel': "{:.2f}",
-    #   f'{loss_label} Top100 Rel': "{:.2f}",
     'Best k': "{}",
-    #   'n_train': "{:.0f}"
 }
 df_styled = df_results[skill_cols].style.format(format_map)
 
@@ -836,7 +460,6 @@ for i, ds in enumerate(paper_ds):
 
 unconditional_crps = np.array([unc_crps.mean() for unc_crps in unconditional_crps])
 #%%
-# unconditional_crps = np.array([u.mean() for u in unconditional_crps])
 unconditional_crps_ratio = unconditional_crps / df_results['CRPS Full'].values
 df_unc_crps = pd.DataFrame(index=used_ds, data=unconditional_crps_ratio, columns=['Unconditional CRPS'])
 #%%
@@ -860,8 +483,7 @@ df_ratio_top3[['Ratio MAE/CRPS', 'Unconditional CRPS', 'CRPS Top3 Rel']].plot(ki
                                                                               rot=90,
                                                                               ax=ax)
 ax.axhline(1., ls=':', color='grey', zorder=-1, linewidth=0.65)
-# ax.fill_between([-1, 100], 0, 1., color='grey', alpha=.2, zorder=-1)
-#ax.set_title("MAE/CRPS")
+
 ax.set_ylabel("Relative CRPS")
 ax.set_xlabel("Dataset")
 
@@ -920,9 +542,7 @@ for i, ds in enumerate(used_ds):
 
     best_k_crps = np.argmin(results[i]['crps'].mean(1))
     best_k_mse = np.argmin(results[i]['se'].mean(1))
-    # df_sumtopk[ds]['Sum CRPS Best k'] = f"{results[i][loss][best_k_crps].mean():.3f}" if best_k_crps < 200 else f"> {results[i]['topk_sums'].mean(1).max():.2f}"
-    # df_sumtopk[ds]['Sum MSE Best k'] = f"{results[i][loss][best_k_mse].mean():.3f}" if best_k_mse < 200 else f"> {results[i]['topk_sums'].mean(1).max():.2f}"
-    # df_sumtopk[ds]['Best k'] = 'full' if df_sumtopk[ds]['Best k'] == len(results[i][loss]) else df_sumtopk[ds]['Best k']
+
 df_sumtopk = pd.DataFrame(df_sumtopk).T
 
 format_map = {
@@ -932,8 +552,6 @@ format_map = {
     'Sum Top20': "{:.3f}",
     'Sum Top50': "{:.3f}",
     'n_train': "{:.0f}",
-    # 'Sum CRPS Best k': "{}",
-    # 'Sum MSE Best k': "{}",
 }
 
 print(df_sumtopk.style.format(format_map).to_latex())
@@ -982,9 +600,7 @@ for i, ds in enumerate(used_ds):
 
     best_k_crps = np.argmin(results[i]['crps'].mean(1))
     best_k_mse = np.argmin(results[i]['se'].mean(1))
-    # df_sumtopk[ds]['Sum CRPS Best k'] = f"{results[i][loss][best_k_crps].mean():.3f}" if best_k_crps < 200 else f"> {results[i]['topk_sums'].mean(1).max():.2f}"
-    # df_sumtopk[ds]['Sum MSE Best k'] = f"{results[i][loss][best_k_mse].mean():.3f}" if best_k_mse < 200 else f"> {results[i]['topk_sums'].mean(1).max():.2f}"
-    # df_sumtopk[ds]['Best k'] = 'full' if df_sumtopk[ds]['Best k'] == len(results[i][loss]) else df_sumtopk[ds]['Best k']
+
 df_sumtopk = pd.DataFrame(df_sumtopk).T
 df_sumtopk_hp = pd.DataFrame(df_sumtopk_hp).T
 
@@ -995,41 +611,5 @@ format_map = {
     'Sum Top20': "{:.3f}",
     'Sum Top50': "{:.3f}",
     'n_train': "{:.0f}",
-    # 'Sum CRPS Best k': "{}",
-    # 'Sum MSE Best k': "{}",
+
 }
-
-# %%
-ds = all_ds[1]
-
-X, y, _, _ = ds.get_data(target=ds.default_target_attribute, dataset_format="dataframe")
-
-df_train, df_test, y_train, y_test = train_test_split(X, y.values, test_size=0.3, random_state=SEED)
-
-X_train = df_train.values
-X_test = df_test.values
-
-# hyperparams = dict(
-#     n_estimators=1000,
-#     random_state=SEED,
-#     n_jobs=-1,
-#     max_features='sqrt',
-#     min_samples_split=5,
-# )
-
-hyperparams = df_hps.loc[ds.name].to_dict()
-if np.isnan(hyperparams['max_depth']):
-    hyperparams['max_depth'] = 9999
-
-rf = RandomForestWeight(hyperparams=hyperparams)
-
-rf.fit(X_train, y_train)
-
-#%%
-y_hat, w_hat = rf.weight_predict(X_test)
-y_hat_med = rf.quantile_predict(q=.5, X_test=X_test)
-
-se_full_test = se(y_test, y_hat)
-ae_full_test = ae(y_test, y_hat_med)
-crps_full_test = crps_sample(y_test, y_train, w_hat, return_mean=False)
-# %%
