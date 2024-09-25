@@ -10,50 +10,6 @@ from utils.sparse_utils import *
 
 from tqdm import tqdm
 
-# def gini(x):
-#     # The rest of the code requires numpy arrays.
-#     x = np.asarray(x)
-
-#     sorted_x = np.sort(x)
-#     n = len(x)
-#     cumx = np.cumsum(sorted_x, dtype=float)
-#     # The above formula, with all weights equal to 1 simplifies to:
-#     return (n + 1 - 2 * np.sum(cumx) / cumx[-1]) / n
-
-
-#
-def gini_mat(x):
-    """
-    Calculate the Gini coefficient for a matrix of values, based on https://stackoverflow.com/questions/48999542/more-efficient-weighted-gini-coefficient-in-python
-    Parameters:
-    - x (array-like): The input matrix. 
-    
-    Returns:
-    - array-like: The Gini coefficient for each row of the matrix.
-    """
-
-    sorted_x = np.sort(x, axis=1)
-    n = x.shape[1]
-    cumx = np.cumsum(sorted_x, dtype=float, axis=1)
-    # The above formula, with all weights equal to 1 simplifies to:
-    return (n + 1 - 2 * np.sum(cumx, axis=1)) / n
-
-
-def simple_dm(l1, l2):
-    """
-    Simple implementation of Diebold-Mariano test.
-    Paramters:
-    - l1 (array-like): The first list of errors.
-    - l2 (array-like): The second list of errors.
-    
-    Returns:
-    - res (statsmodels.regression.linear_model.RegressionResultsWrapper): The results of the Diebold-Mariano test.
-    """
-    d = l1 - l2
-    mod = sm.OLS(d, np.ones(len(d)))
-    res = mod.fit().get_robustcov_results(cov_type='HAC', maxlags=1)
-    return res
-
 
 def calc_r2(y_true, y_pred, y_train=None):
     """
@@ -84,30 +40,9 @@ def calc_r2(y_true, y_pred, y_train=None):
     return r2
 
 
-def quantile_score(y_true, y_pred, alpha):
-    """
-    Calculate the quantile score.
-
-    Parameters:
-    - y_true: The true values.
-    - y_pred: The predicted values.
-    - alpha: The quantile level.
-
-    Returns:
-    - The quantile score.
-
-    """
-
-    diff = y_true - y_pred
-    indicator = (diff >= 0).astype(diff.dtype)
-    loss = indicator * alpha * diff + (1 - indicator) * (1 - alpha) * (-diff)
-
-    return 2 * loss
-
-
 def se(y_true, y_pred):
     """
-    Calculates the squared error (SE) between the true values and the predicted values.
+    Calculates the squared error (SE) between the true and predicted values.
 
     Parameters:
     - y_true (array-like): The true values.
@@ -122,7 +57,7 @@ def se(y_true, y_pred):
 
 def ae(y_true, y_pred):
     """
-    Calculates the absolute error (AE) between the true values and the predicted values.
+    Calculates the absolute error (AE) between the true and predicted values.
 
     Parameters:
     - y_true (array-like): The true values.
@@ -137,7 +72,7 @@ def ae(y_true, y_pred):
 
 def mse(y_true, y_pred):
     """
-    Calculates the mean squared error (MSE) between the true values and the predicted values.
+    Calculates the mean squared error (MSE) between the true and predicted values.
 
     Parameters:
     - y_true (array-like): The true values.
@@ -151,7 +86,7 @@ def mse(y_true, y_pred):
 
 def mae(y_true, y_pred):
     """
-    Calculate the mean absolute error (MAE) between the true values and the predicted values.
+    Calculate the mean absolute error (MAE) between the true and predicted values.
 
     Parameters:
     - y_true: numpy array or list
