@@ -90,7 +90,7 @@ HP_TUNING = False
 BAGGED_TREES = True
 GRID_SEARCH = True
 
-STANDARDIZE_Y = True
+STANDARDIZE_Y = False
 
 SHALLOW = False
 
@@ -177,7 +177,7 @@ for i, ds in enumerate(paper_ds):
             'random_state': [SEED],
             'max_depth': [None],
             'min_samples_leaf': [1, 2, 4, 6, 8, 10, 15, 20, 30, 40, 50],
-            'min_samples_split': [5], 
+            'min_samples_split': [5],
             'n_estimators': [1000],
             'max_features': [0.333, 'sqrt', 0.5, 1.0] if BAGGED_TREES is True else [0.333, 'sqrt', 0.5],
         }
@@ -290,14 +290,13 @@ for i, ds in enumerate(paper_ds):
 
         gc.collect()
 
-        results_ds = topk_looper(
-            X_test=X_test,
-            y_train=y_train,
-            y_test=y_test,
-            rf=rf,
-            k_max=TOP_K_MAX,
-            num_processes=NO_PROCESSES,
-            verbose=True)
+        results_ds = topk_looper(X_test=X_test,
+                                 y_train=y_train,
+                                 y_test=y_test,
+                                 rf=rf,
+                                 k_max=TOP_K_MAX,
+                                 num_processes=NO_PROCESSES,
+                                 verbose=True)
 
     if HP_TUNING is True:
         results_ds['hyperparams'] = hyperparams
@@ -306,7 +305,6 @@ for i, ds in enumerate(paper_ds):
         pickle.dump(results_ds, file)
 
     del results_ds
-    
 
 # %%
 results = []
@@ -343,7 +341,7 @@ for ds in paper_ds:
             results.append(result)
 # %%
 
-fig, ax = plt.subplots(nrows=7, ncols=3, sharex=False, figsize=(17, 30))
+fig, ax = plt.subplots(nrows=6, ncols=3, sharex=False, figsize=(17, 30))
 
 METRIC = 'crps'
 METRIC_LABEL = METRIC.upper() if METRIC == 'crps' else 'M' + METRIC.upper()
@@ -376,10 +374,10 @@ for row in ax:
 
         counter += 1
 
-        if counter == len(results):
-            fig.delaxes(ax[-1][-2])
-            fig.delaxes(ax[-1][-1])
-            break
+        # if counter == len(results):
+        #     fig.delaxes(ax[-1][-2])
+        #     fig.delaxes(ax[-1][-1])
+        #     break
 # %%
 
 considered_ks = [3, 5, 10, 20, 50]
@@ -611,5 +609,4 @@ format_map = {
     'Sum Top20': "{:.3f}",
     'Sum Top50': "{:.3f}",
     'n_train': "{:.0f}",
-
 }
