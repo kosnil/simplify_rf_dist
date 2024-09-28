@@ -527,7 +527,7 @@ class RandomForestWeight:
             if verbose is True:
                 print("Will calculate quantiles with given weight matrix")
         elif X_test is not None and w_all is None:
-            w_all = self.get_rf_weights2(X_test, verbose=verbose)
+            w_all = self.get_rf_weights2(X_test)
             if top_k is not None:
                 top_k_row_idx = np.argpartition(w_all, -top_k, axis=1)[:, -top_k:]
                 i = np.indices(top_k_row_idx.shape)[0]
