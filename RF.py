@@ -241,32 +241,6 @@ class RandomForestWeight:
 
         return w_all
 
-    # def weights_loop_sparse(self, n_trees, len_train, len_test, pred1, pred2, inbag=np.array([[]])):
-
-    #     w_all = lil_matrix((len_test, len_train), dtype=np.float32)
-
-    #     for i in tqdm(range(len_test)):
-    #         # aux1 = pred2[i]
-
-    #         for j in range(n_trees):
-    #             # for tree j: which training obs. (pred1) are in the same leaf as test obs i (aux1)
-    #             # which_same = np.where(pred1[:, j] == aux1[j])[0]
-    #             which_same = np.where(pred1[:, j] == pred2[i, j])[0]
-    #             # for tree j: how often were these training obs. present in bootstrapped training sample?
-    #             # should be > 0 for all elements.
-    #             how_often = inbag[j][which_same]
-    #             # how_often = inbag[j,which_same]
-    #             ho_sum = how_often.sum()
-
-    #             divider = ho_sum * n_trees
-
-    #             # w_all[which_same] = w_all[which_same] + (how_often / divider)
-    #             w_all[i, which_same] = w_all[i, which_same] + (how_often / divider)
-    #             # w_all[i, which_same] += how_often / divider
-    #             # w_all[i, which_same] = w_all[i, which_same] + ((how_often/ho_sum) / n_trees)
-
-    #     return w_all.tocsr()
-
     def get_rf_weights2(self, X_test):  #, return_checks=False, verbose=True):
         """
         Calculate the weights for random forest predictions.
@@ -540,67 +514,11 @@ class RandomForestWeight:
             return -1
 
         idx_sort = np.argsort(self.y_train)
-        y_sort = self.y_train[idx_sort]
-        # w_sort = w_all[:,idx_sort]
-        # del w_all
-        # ecdfs = np.cumsum(w_sort, axis=1)
-        # del w_sort
+        if isinstance(self.y_train, pd.DataFrame) or isinstance(self.y_train, pd.Series):
+            y_sort = self.y_train.values[idx_sort]
+        else:
+            y_sort = self.y_train[idx_sort]
 
-        # if (batch_size > 0) and (len(w_all) > batch_size):
-
-        #     print("Calculating quantiles in batches")
-
-        #     # split_idxs = np.arange(0, len(w_all), batch_size)
-
-        #     # batches = np.array_split(w_all, split_idxs[1:])
-        #     # batches = np.array_split(w_all[:, idx_sort], split_idxs[1:])
-
-        #     # num_batches = len(batches)
-
-        #     # del w_all
-        #     # del idx_sort
-        #     result = []
-
-        #     test_len = w_all.shape[0]
-
-        #     num_batches = test_len // batch_size + 1
-
-        #     for i in tqdm(range(num_batches)):
-        #         start_idx = i * batch_size
-        #         end_idx = min((i + 1) * batch_size, test_len)
-
-        #         w_batch = w_all[start_idx:end_idx, :]
-
-        #         # for i, batch in tqdm(enumerate(batches)):
-
-        #         ecdfs_b = np.cumsum(w_batch[:, idx_sort], axis=1)
-
-        #         if isinstance(q, (list, pd.core.series.Series, np.ndarray)):
-
-        #             batch_result = np.zeros((len(w_batch), len(q)))
-
-        #             for i, q_i in enumerate(q):
-        #                 # indices_tmp = np.where(ecdfs < q_i, np.arange(ecdfs.shape[1])[None, :], -1)
-        #                 # q_idxs = indices_tmp.max(axis=1)
-        #                 q_idxs = np.argmax(ecdfs_b >= q_i, axis=1)
-
-        #                 batch_result[:, i] = (y_sort[q_idxs - 1] + y_sort[q_idxs]) * .5
-        #                 # result[:,i] = (y_sort[q_idxs] + y_sort[q_idxs+1]) * .5
-
-        #             result.append(batch_result)
-
-        #         else:
-        #             q_idxs = np.argmax(ecdfs_b >= q, axis=1)
-
-        #             batch_result = (y_sort[q_idxs - 1] + y_sort[q_idxs]) * .5
-
-        #             result.append(batch_result)
-
-        #     result = np.concatenate(result, axis=0)
-
-        #     return result
-
-        # else:
         ecdfs = np.cumsum(w_all[:, idx_sort], axis=1)
 
         del w_all
@@ -611,10 +529,12 @@ class RandomForestWeight:
             result = np.zeros((len(ecdfs), len(q)))
 
             for i, q_i in enumerate(q):
-                # indices_tmp = np.where(ecdfs < q_i, np.arange(ecdfs.shape[1])[None, :], -1)
-                # q_idxs = indices_tmp.max(axis=1)
+
                 q_idxs = np.argmax(ecdfs >= q_i, axis=1)
 
+                # special case if q is really small and q_idxs may be 0
+                if q_idxs == 0:
+                    q_idxs = 1
                 result[:, i] = (y_sort[q_idxs - 1] + y_sort[q_idxs]) * .5
                 # result[:,i] = (y_sort[q_idxs] + y_sort[q_idxs+1]) * .5
 
@@ -623,6 +543,10 @@ class RandomForestWeight:
         else:
 
             q_idxs = np.argmax(ecdfs >= q, axis=1)
+
+            # special case if q is really small and q_idxs may be 0
+            if q_idxs == 0:
+                q_idxs = 1
 
             return (y_sort[q_idxs - 1] + y_sort[q_idxs]) * .5
             # indices_tmp = np.where(ecdfs < q, np.arange(ecdfs.shape[1])[None, :], -1)
