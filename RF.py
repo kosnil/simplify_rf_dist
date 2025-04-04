@@ -533,8 +533,9 @@ class RandomForestWeight:
                 q_idxs = np.argmax(ecdfs >= q_i, axis=1)
 
                 # special case if q is really small and q_idxs may be 0
-                if q_idxs == 0:
-                    q_idxs = 1
+                q_idxs = np.where(q_idxs == 0, 1, q_idxs)
+                # if q_idxs == 0:
+                #     q_idxs = 1
                 result[:, i] = (y_sort[q_idxs - 1] + y_sort[q_idxs]) * .5
                 # result[:,i] = (y_sort[q_idxs] + y_sort[q_idxs+1]) * .5
 
@@ -545,8 +546,9 @@ class RandomForestWeight:
             q_idxs = np.argmax(ecdfs >= q, axis=1)
 
             # special case if q is really small and q_idxs may be 0
-            if q_idxs == 0:
-                q_idxs = 1
+            q_idxs = np.where(q_idxs == 0, 1, q_idxs)
+            # if q_idxs == 0:
+            #     q_idxs = 1
 
             return (y_sort[q_idxs - 1] + y_sort[q_idxs]) * .5
             # indices_tmp = np.where(ecdfs < q, np.arange(ecdfs.shape[1])[None, :], -1)
