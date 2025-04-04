@@ -118,8 +118,8 @@ class RandomForestWeight:
             w_all_topk[i, top_k_row_idx] = w_all[i, top_k_row_idx]
             w_all = w_all_topk / w_all_topk.sum(axis=1)[:, None]
 
-        else:
-            y_pred = w_all @ self.y_train
+        # else:
+        y_pred = w_all @ self.y_train
 
         if return_weights:
             return y_pred, w_all
