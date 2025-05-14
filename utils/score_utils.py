@@ -1,17 +1,15 @@
 import numpy as np
-import statsmodels.api as sm
 import logging
 import time
 import multiprocessing
 from joblib import Parallel, delayed
 import gc
+from tqdm import tqdm
 
 from utils.sparse_utils import *
 
-from tqdm import tqdm
 
-
-def calc_r2(y_true, y_pred, y_train=None):
+def calc_r2(y_true, y_pred, y_train=None) -> float:
     """
     Calculate the R-squared (coefficient of determination) for a regression model.
 
