@@ -79,4 +79,5 @@ cython_debug/
 w_all_timetrendTrue_catfeatFalse.csv
 w_all_timetrendTrue_catfeatTrue.csv
 
-weight_storage/
+*.npz
+*.h5
