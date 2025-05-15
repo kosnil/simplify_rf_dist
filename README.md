@@ -42,24 +42,16 @@ The basic workflow is as follows:
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-import openml
+from sklearn.datasets import make_regression
 
 # Set seed for reproducibility
 SEED = 7531
 np.random.seed(SEED)
 
-# Load California housing dataset from OpenML
-ca_housing_id = 44138
-ca_housing_ds = openml.datasets.get_dataset(ca_housing_id)
+# Load dataset (in this case, we create a synthetic dataset)
+X, y = make_regression(n_samples=5, n_features=2, noise=1, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=SEED)
 
-X, y, _, _ = ds.get_data(target=ds.default_target_attribute, dataset_format='dataframe')
-df_train, df_test, y_train, y_test = train_test_split(X, y.values, test_size=0.3, random_state=SEED)
-
-# Convert the dataframes to numpy arrays
-X_train = df_train.values
-X_test = df_test.values
-y_train = y_train.astype(np.float32)
-y_test = y_test.astype(np.float32)
 
 # Create a Topk RF class and train. The RandomForestWeight class is based on the RandomForestRegressor class from sklearn.
 from RF import RandomForestWeight
@@ -73,7 +65,7 @@ hyperparams = dict(
     min_samples_split=5,
 )
 
-rf = RandomForestWeight(hyperparams=hyperparams, name='rf_' + ds.name)
+rf = RandomForestWeight(hyperparams=hyperparams)
 rf.fit(X_train, y_train)
 
 # Predict the test set
@@ -110,3 +102,17 @@ simplify_rf_dist/
 │   └── ...                 
 └── [LICENSE](LICENSE)                
 
+<!--
+# Load California housing dataset from OpenML
+ca_housing_id = 44138
+ca_housing_ds = openml.datasets.get_dataset(ca_housing_id)
+
+X, y, _, _ = ds.get_data(target=ds.default_target_attribute, dataset_format='dataframe')
+df_train, df_test, y_train, y_test = train_test_split(X, y.values, test_size=0.3, random_state=SEED)
+
+# Convert the dataframes to numpy arrays
+X_train = df_train.values
+X_test = df_test.values
+y_train = y_train.astype(np.float32)
+y_test = y_test.astype(np.float32)
+-->
