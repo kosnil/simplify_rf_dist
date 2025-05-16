@@ -83,7 +83,7 @@ class RandomForestWeight:
         """
         return self.rf.predict(X)
 
-    def weight_predict(self, X, top_k=None, w_th=None, return_weights=True, batch_size=5000, verbose=True):
+    def weight_predict(self, X, top_k=None, w_th=None, return_weights=True, verbose=True):
         """
         Predicts the mean for the given input data by using weights.
 
@@ -92,7 +92,6 @@ class RandomForestWeight:
         - top_k: Number of top weights to consider. If specified, only the top_k weights will be used for prediction.
         - w_th: Weight threshold. If specified, weights below this threshold will be set to 0.
         - return_weights: Flag indicating whether to return the weights along with the predicted output.
-        - batch_size: Batch size for processing the input data.
         - verbose: Flag indicating whether to print verbose output.
 
         Returns:
@@ -125,6 +124,31 @@ class RandomForestWeight:
             return y_pred, w_all
 
         return y_pred
+
+    def weight_predict_sparse(self, X, w_all_sparse, w_sorted=True, top_k=None, return_weight_sum=False):
+
+        if top_k is not None:
+
+            top_idx, top_dataidx = top_n_idx_sparse(w_all_sparse, top_k)
+            w_k, w_topk_sums = sparsify_csr(w_all_sparse, top_idx, top_dataidx, return_sum=True)
+
+        else:
+            w_k = w_all_sparse
+
+        del w_all_sparse
+        del top_idx, top_dataidx
+
+        if w_sorted is False:
+            idx_sort = np.argsort(self.y_train)
+            y_train = self.y_train[idx_sort]
+            w_k = w_k[:, idx_sort]
+
+        y_tk = w_k @ y_train
+
+        if return_weight_sum:
+            return y_tk, w_topk_sums
+
+        return y_tk
 
     def evaluate(self, X_test, y_test, verbose=True):
         """
@@ -289,7 +313,7 @@ class RandomForestWeight:
     @staticmethod
     def process_row(n_trees, pred1, pred2, inbag, w_all, idx_sort=None):
         """
-        Process row of the random forest sparse predictions.
+        Process row of the random forest sparse weight calculation.
 
         Args:
             n_trees (int): The number of trees in the random forest.
@@ -315,7 +339,7 @@ class RandomForestWeight:
             return w_all[:, idx_sort]
         return w_all
 
-    def get_rf_weights_sparse(self, X_test, sort=True):
+    def get_rf_weights_sparse(self, X_test, sort=True, lower_precision=True):
         """
         Calculates the sparse random forest weights for the given test data in parallel.
 
@@ -324,6 +348,9 @@ class RandomForestWeight:
             The test data for which to calculate the weights.
         - sort: bool, optional
             Whether to sort the results by the target variable. Default is True.
+        - lower_precision: bool, optional
+            Whether to use lower precision (np.float32) for the weight matrix. Default is True.
+            We recommend using lower precision for large datasets to save memory.
 
         Returns:
         - w_all: scipy.sparse.csr_matrix
@@ -352,7 +379,7 @@ class RandomForestWeight:
 
         print('Done with inbag, pred1, pred2')
 
-        w_all = lil_matrix((1, len(self.X_train)), dtype=np.float32)
+        w_all = lil_matrix((1, len(self.X_train)), dtype=np.float32 if lower_precision else np.float64)
         if sort:
             idx_sort = np.argsort(self.y_train)
             results = Parallel(n_jobs=-1)(
@@ -360,7 +387,7 @@ class RandomForestWeight:
                 for i in range(len_X_test))
         else:
             results = Parallel(n_jobs=-1)(
-                delayed(self.process_row)(self.n_trees, pred1, pred2[i], inbag, w_all) for i in range(len(X_test)))
+                delayed(self.process_row)(self.n_trees, pred1, pred2[i], inbag, w_all) for i in range(len_X_test))
 
         w_all = scs.vstack(results)
         return w_all.tocsr()
@@ -446,20 +473,24 @@ class RandomForestWeight:
         else:
             return w_all
 
-    def sparse_quantile_predict(self, q, w_all):
+    def sparse_quantile_predict(self, q, w_all, w_sorted=True):
         """
         Predicts quantiles for given values of q for a sparse w_all.
 
         Parameters:
         - q: A scalar or an array-like object containing quantile values.
         - w_all: An array-like object containing weights.
+        - w_sorted: A boolean indicating whether the weights are sorted according to y_train. Default is True.
 
         Returns:
         - result: A numpy array of shape (len(ecdfs), len(q)) if q is an array-like object, else a numpy array of shape (len(ecdfs),) if q is a scalar.
         """
-
-        idx_sort = np.argsort(self.y_train)
-        y_sort = self.y_train[idx_sort]
+        if not w_sorted:
+            idx_sort = np.argsort(self.y_train)
+            y_sort = self.y_train[idx_sort]
+            w_sort = w_all[:, idx_sort]
+        else:
+            y_sort = self.y_train
 
         ecdfs = sparse_cumsum(w_all)
 

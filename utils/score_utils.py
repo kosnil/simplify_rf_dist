@@ -639,7 +639,7 @@ def topk_looper(X_test, y_train, y_test, rf, w_hat=None, k_max=100, num_processe
     y_test_mean = np.mean(y_test)
 
     if w_hat is None:
-        y_hat, w_hat = rf.weight_predict(X_test, batch_size=batch_size, return_weights=True)
+        y_hat, w_hat = rf.weight_predict(X_test, return_weights=True)
     else:
         y_hat = rf.predict(X_test)
 
