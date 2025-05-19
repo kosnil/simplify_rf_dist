@@ -75,33 +75,34 @@ To be as efficient as possible, we calculate the weights in parallel using numba
 As these calculations take place in-memory, this can lead to memory issues for larger datasets. To avoid this, we recommend using the `sparse` versions of the functions. We refer to `minimal_working_example.ipynb` for details.
 
 
+
 ## Directory Structure
 ```
 simplify_rf_dist/  
-├── [README.md](README.md)    
-├── [requirements.txt](requirements.txt)  
+├── README.md  
+├── requirements.txt  
 ├── data/        
 │   ├── soep_prep/          
-│   │   ├── [prepare_soep_data.R](data/soep_prep/prepare_soep_data.R)  
+│   │   ├── prepare_soep_data.R  
 │   └── ...                
 ├── utils/                  
-│   ├── [plotting_helpers.py](utils/plotting_helpers.py)  
-│   ├── [score_utils.py](utils/score_utils.py)  
-│   ├── [sparse_utils.py](utils/sparse_utils.py)  
+│   ├── plotting_helpers.py  
+│   ├── score_utils.py  
+│   ├── sparse_utils.py  
 │   └── ...                 
 ├── results/                  
 ├── Plots/                  
 ├── weight_storage/         
-├── [minimal_working_example.ipynb](minimal_working_example.ipynb)  
-├── [RF.py](RF.py)                   
-├── [rf_hp_tuning.py](rf_hp_tuning.py)         
-├── [rf_restrict_k_openml.py](rf_restrict_k_openml.py)  
-├── [rf_soep.py](rf_soep.py)              
-├── [tuned_score_comparison.py](tuned_score_comparison.py)  
+├── minimal_working_example.ipynb  
+├── RF.py                   
+├── rf_hp_tuning.py         
+├── rf_restrict_k_openml.py  
+├── rf_soep.py              
+├── tuned_score_comparison.py  
 ├── Theoretical Example/    
-│   ├── [Toyexample.ipynb](Theoretical%20Example/Toyexample.ipynb)   
+│   ├── Toyexample.ipynb   
 │   └── ...                 
-└── [LICENSE](LICENSE)                
+└── LICENSE                
 ```
 
 
