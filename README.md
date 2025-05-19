@@ -4,7 +4,7 @@ This repository contains the implementation of experiments from the paper titled
 
 You can find the paper on arXiv [here](https://arxiv.org/abs/2408.12332).
 
----
+
 
 ## Abstract
 Since their introduction by Breiman, Random Forests (RFs) have proven to be useful for both classification and regression tasks.
@@ -15,7 +15,7 @@ This sparsification step greatly improves the interpretability of RF predictions
 In empirical experiments, we document that the simplified predictions can be similar to or exceed the original ones in terms of forecasting performance.
 We explore the statistical sources of this finding via a stylized analytical model of RFs. The model suggests that simplification is particularly promising if the unknown true forecast distribution contains many small weights that are estimated imprecisely.
 
----
+
 
 ## Dependencies
 This repository contains the code used to generate the results in the paper. The code is written in Python and uses the libraries (as specified in `requirements.txt`):
@@ -31,15 +31,14 @@ This repository contains the code used to generate the results in the paper. The
 - `seaborn==0.13.2`
 - `tqdm==4.66.2`
 
----
 
 ## Usage
 
-This repository contains the code to replicate the results in the paper (including training, tuning and evaluation) and to apply Topk to your own data. A first starting point is the `minimal_working_example.ipynb` notebook, which contains a minimal working example of how to use the code. The notebook contains a step-by-step guide to replicate the results in the paper.
+This repository contains the code to replicate the results in the paper (including training, tuning and evaluation) and to apply Topk to your own data. The main code can be found in the `RF.py` file. The code is organized in a modular way, so you can easily adapt it to your own needs. The main class is `RandomForestWeight`, which is a wrapper around the `RandomForestRegressor` class from `sklearn`. The class contains methods to train the model, predict the test set, and calculate the weights (independent of the choice of $k$, as a byproduct we also implement Meinshausen's Quantile Regression Forests).  
+A first starting point is the `minimal_working_example.ipynb` notebook, which contains a minimal working example of how to use the code. The notebook contains a step-by-step guide to replicate the results in the paper.
 The basic workflow is as follows:
 
 ```python
-import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_regression
@@ -49,7 +48,7 @@ SEED = 7531
 np.random.seed(SEED)
 
 # Load dataset (in this case, we create a synthetic dataset)
-X, y = make_regression(n_samples=5, n_features=2, noise=1, random_state=42)
+X, y = make_regression(n_samples=5000, n_features=20, noise=1, random_state=SEED)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=SEED)
 
 # Create a Topk RF class and train. The RandomForestWeight class is based on the RandomForestRegressor class from sklearn.
@@ -72,15 +71,20 @@ k = 5
 y_hat_k, w_k = rf.weight_predict(X_test, top_k=k, return_weights=True)
 ```
 
+To reproduce the results in the paper, you can run the scripts in the files `rf_restrict_k_openml.py`, `rf_hp_tuning.py`, `tuned_score_comparison` and `rf_soep.py`. These scripts contain the code to train, tune, and evaluate models on the OpenML datasets as well as the SOEP dataset. Results are stored in the `results/` directory.
+
+To be as efficient as possible, we calculate the weights in parallel using numba. 
+As these calculations take place in-memory, this can lead to memory issues for larger datasets. To avoid this, we recommend using the `sparse` versions of the functions. We refer to `minimal_working_example.ipynb` for details.
+
 
 ## Directory Structure
-
+```
 simplify_rf_dist/  
 ├── [README.md](README.md)    
 ├── [requirements.txt](requirements.txt)  
 ├── data/        
 │   ├── soep_prep/          
-│   │   ├── [prepare_soep_data.R](data/soep_prep/prepare_soep_data.R)
+│   │   ├── [prepare_soep_data.R](data/soep_prep/prepare_soep_data.R)  
 │   └── ...                
 ├── utils/                  
 │   ├── [plotting_helpers.py](utils/plotting_helpers.py)  
@@ -100,6 +104,9 @@ simplify_rf_dist/
 │   ├── [Toyexample.ipynb](Theoretical%20Example/Toyexample.ipynb)   
 │   └── ...                 
 └── [LICENSE](LICENSE)                
+```
+
+
 
 <!--
 # Load California housing dataset from OpenML
