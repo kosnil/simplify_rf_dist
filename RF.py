@@ -3,18 +3,11 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import _forest as forest_utils
 from tqdm import tqdm
-# from xgboost import XGBRegressor
-# import xgboost as xgb
-from scipy import stats
-import dask.array as da
 
 from utils.score_utils import *
 from utils.sparse_utils import *
 
 from numba import jit, njit, prange
-
-import os
-import h5py
 
 from scipy.sparse import lil_matrix, csr_matrix
 from multiprocessing import Pool
@@ -125,7 +118,26 @@ class RandomForestWeight:
 
         return y_pred
 
-    def weight_predict_sparse(self, X, w_all_sparse, w_sorted=True, top_k=None, return_weight_sum=False):
+    def weight_predict_sparse(self,
+                              w_all_sparse,
+                              w_sorted=True,
+                              top_k=None,
+                              return_weights=False,
+                              return_weight_sum=False):
+        """
+        Predicts the mean for the given input data with sparse weights.
+        Parameters:
+        - w_all_sparse: Sparse matrix containing the weights. As weights for some X are given, there is no need to use the regressors for the prediction.
+        - w_sorted: Boolean indicating whether the weights are sorted according to y_train.
+        - top_k: Number of top weights to consider. If specified, only the top_k weights will be used for prediction.
+        - return_weights: Flag indicating whether to return the weights along with the predicted output.
+        - return_weight_sum: Flag indicating whether to return the sum of the weights along with the predicted output.
+        Returns:
+        - If return_weights is True, returns a tuple containing the predicted output and the weights.
+        - If return_weight_sum is True, returns a tuple containing the predicted output and the sum of the weights.
+        - If both return_weights and return_weight_sum are True, returns a tuple containing the predicted output, the weights, and the sum of the weights.
+        - If both return_weights and return_weight_sum are False, returns the predicted output.
+        """
 
         if top_k is not None:
 
@@ -138,17 +150,23 @@ class RandomForestWeight:
         del w_all_sparse
         del top_idx, top_dataidx
 
-        if w_sorted is False:
+        if w_sorted is True:
             idx_sort = np.argsort(self.y_train)
-            y_train = self.y_train[idx_sort]
-            w_k = w_k[:, idx_sort]
+            y_train_correctly_sorted = self.y_train[idx_sort]
+        else:
+            y_train_correctly_sorted = self.y_train
 
-        y_tk = w_k @ y_train
+        y_tk = w_k @ y_train_correctly_sorted
 
-        if return_weight_sum:
+        if return_weights is True:
+            if return_weight_sum is True:
+                return y_tk, w_k, w_topk_sums
+            else:
+                return y_tk, w_k
+        elif return_weight_sum is True:
             return y_tk, w_topk_sums
-
-        return y_tk
+        else:
+            return y_tk
 
     def evaluate(self, X_test, y_test, verbose=True):
         """

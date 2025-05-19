@@ -21,7 +21,7 @@ def top_n_idx_sparse(matrix, n):
     return top_n_idx, top_n_dataidx
 
 
-def sparsify_csr(w_csr, top_idx, top_dataidx, return_sum=False):
+def sparsify_csr(w_csr: csr_matrix, top_idx: int, top_dataidx: int, return_sum=False) -> csr_matrix:
     """Sparsify a csr matrix by keeping only the top values in each row."""
     new_w = lil_matrix(w_csr.shape, dtype=np.float32)
 
@@ -40,7 +40,15 @@ def sparsify_csr(w_csr, top_idx, top_dataidx, return_sum=False):
     return new_w.tocsr()
 
 
-def sparse_cumsum(arr):
+def sparse_cumsum(arr: csr_matrix) -> csr_matrix:
+    """Compute the cumulative sum of a sparse matrix along the rows.
+    This function sums only the non-zero elements of the sparse matrix.
+    Thus, it is not a simple cumulative sum but a cumulative sum of the non-zero elements and you cannot use this as a replacement for np.cumsum.
+    Parameters:
+    - arr: csr_matrix
+    Returns:
+    - arr: csr_matrix with cumulative sums
+    """
     arr = arr.copy()
 
     indptr = arr.indptr
