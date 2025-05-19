@@ -35,7 +35,7 @@ import warnings
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-from RF import RandomForestWeight
+from TopkRF.RF import RandomForestWeight
 
 import openml
 
