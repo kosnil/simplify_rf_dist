@@ -15,6 +15,19 @@ This sparsification step greatly improves the interpretability of RF predictions
 In empirical experiments, we document that the simplified predictions can be similar to or exceed the original ones in terms of forecasting performance.
 We explore the statistical sources of this finding via a stylized analytical model of RFs. The model suggests that simplification is particularly promising if the unknown true forecast distribution contains many small weights that are estimated imprecisely.
 
+## Install
+
+To use Topk you can either clone the repository like so:
+```bash
+git clone https://github.com/kosnil/simplify_rf_dist.git
+cd simplify_rf_dist
+```
+or install it via pip directly from the repository. We recommend using a virtual environment to avoid conflicts with other packages. Here is an example using `conda`:
+```bash
+conda create -n simplify_rf python=3.10
+conda activate simplify_rf
+pip install git+https://github.com/kosnil/simplify_rf_dist.git
+```
 
 
 ## Dependencies
