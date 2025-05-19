@@ -4,8 +4,8 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import _forest as forest_utils
 from tqdm import tqdm
 
-from utils.score_utils import *
-from utils.sparse_utils import *
+from TopkRF.utils.score_utils import *
+from TopkRF.utils.sparse_utils import *
 
 from numba import jit, njit, prange
 

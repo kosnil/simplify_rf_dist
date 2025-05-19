@@ -7,7 +7,7 @@ import gc
 from tqdm import tqdm
 from scipy.sparse import csr_matrix
 
-from utils.sparse_utils import *
+from TopkRF.utils.sparse_utils import *
 
 
 def calc_r2(y_true, y_pred, y_train=None) -> float:
