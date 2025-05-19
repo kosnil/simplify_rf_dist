@@ -3,8 +3,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from tqdm import tqdm
-from itertools import product
 import pickle
 import os
 from sklearn.model_selection import train_test_split
@@ -91,8 +89,6 @@ GRID_SEARCH = True
 
 STANDARDIZE_Y = False
 
-SHALLOW = False
-
 for i, ds in enumerate(paper_ds):
 
     if HP_TUNING is True:
@@ -102,8 +98,7 @@ for i, ds in enumerate(paper_ds):
             file_name = cwd + f"/results/openml/results_{ds.name.replace(' ', '_')}_hptuned_grid.pkl"
         else:
             file_name = cwd + f"/results/openml/results_{ds.name.replace(' ', '_')}_hptuned.pkl"
-    elif SHALLOW is True:
-        file_name = cwd + f"/results/openml/results_{ds.name.replace(' ', '_')}_shallow.pkl"
+
     else:
         if STANDARDIZE_Y is True:
             file_name = cwd + f"/results/openml/results_{ds.name.replace(' ', '_')}_standardized.pkl"
@@ -127,27 +122,13 @@ for i, ds in enumerate(paper_ds):
         X = X.drop(columns=['y2'])
 
     if ds.name == 'delays_zurich_transport':
-        if SHALLOW is True:
-            if os.path.exists(cwd + f'/data/delays_zurich_transport_randixs004.pkl'):
-                with open(cwd + f'/data/delays_zurich_transport_randixs004.pkl', 'rb') as file:
-                    rand_idxs = pickle.load(file)
-            else:
-                rand_idxs = np.random.choice(len(X), size=int(len(X) * 0.04), replace=False)
-                with open(cwd + f'/data/delays_zurich_transport_randixs004.pkl', 'wb') as file:
-                    pickle.dump(rand_idxs, file)
+        if os.path.exists(cwd + f'/data/delays_zurich_transport_randixs02.pkl'):
+            with open(cwd + f'/data/delays_zurich_transport_randixs02.pkl', 'rb') as file:
+                rand_idxs = pickle.load(file)
         else:
-            if os.path.exists(cwd + f'/data/delays_zurich_transport_randixs02.pkl'):
-                with open(cwd + f'/data/delays_zurich_transport_randixs02.pkl', 'rb') as file:
-                    rand_idxs = pickle.load(file)
-            else:
-                rand_idxs = np.random.choice(len(X), size=int(len(X) * 0.2), replace=False)
-                with open(cwd + f'/data/delays_zurich_transport_randixs02.pkl', 'wb') as file:
-                    pickle.dump(rand_idxs, file)
-        X = X.iloc[rand_idxs]
-        y = y.iloc[rand_idxs]
-
-    if SHALLOW is True and ds.name == 'nyc-taxi-green-dec-2016':
-        rand_idxs = np.random.choice(len(X), size=int(len(X) * 0.3), replace=False)
+            rand_idxs = np.random.choice(len(X), size=int(len(X) * 0.2), replace=False)
+            with open(cwd + f'/data/delays_zurich_transport_randixs02.pkl', 'wb') as file:
+                pickle.dump(rand_idxs, file)
         X = X.iloc[rand_idxs]
         y = y.iloc[rand_idxs]
 
@@ -234,9 +215,6 @@ for i, ds in enumerate(paper_ds):
                            min_samples_split=5,
                            min_samples_leaf=1)
 
-        if SHALLOW is True:
-            hyperparams['min_samples_leaf'] = 50
-
     print("Train RF with hyperparams: ", hyperparams)
     rf = RandomForestWeight(hyperparams=hyperparams, name='rf_' + ds.name)
     rf.fit(X_train, y_train)
@@ -252,8 +230,6 @@ for i, ds in enumerate(paper_ds):
             else:
                 weight_path = cwd + '/weight_storage/rf_' + ds.name + '_weights_hptuned.npz'
 
-        elif SHALLOW is True:
-            weight_path = cwd + '/weight_storage/rf_' + ds.name + '_weights_shallow.npz'
         else:
             if STANDARDIZE_Y is True:
                 weight_path = cwd + '/weight_storage/rf_' + ds.name + '_weights_standardized.npz'
@@ -312,7 +288,6 @@ used_ds = []
 considered_ks = [3, 5, 10, 20, 50]
 
 HP_TUNED_RESULTS = True
-SHALLOW_RESULTS = False
 GRID_SEARCH_RESULTS = True
 
 STANDARDIZE_Y_RESULTS = True
@@ -325,9 +300,6 @@ for ds in paper_ds:
             file_name = cwd + f"/results/openml/results_{ds.name.replace(' ', '_')}_hptuned_grid.pkl"
         else:
             file_name = cwd + f"/results/openml/results_{ds.name.replace(' ', '_')}_hptuned.pkl"
-
-    elif SHALLOW_RESULTS is True:
-        file_name = cwd + f"/results/openml/results_{ds.name.replace(' ', '_')}_shallow.pkl"
     else:
         if STANDARDIZE_Y_RESULTS is True:
             file_name = cwd + f"/results/openml/results_{ds.name.replace(' ', '_')}_standardized.pkl"
@@ -560,7 +532,6 @@ used_ds = []
 considered_ks = [3, 5, 10, 20, 50]
 
 HP_TUNED_RESULTS = True
-SHALLOW_RESULTS = False
 
 for ds in paper_ds:
     if BAGGED_TREES is False:

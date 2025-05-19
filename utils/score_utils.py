@@ -5,6 +5,7 @@ import multiprocessing
 from joblib import Parallel, delayed
 import gc
 from tqdm import tqdm
+from scipy.sparse import csr_matrix
 
 from utils.sparse_utils import *
 
@@ -38,7 +39,7 @@ def calc_r2(y_true, y_pred, y_train=None) -> float:
     return r2
 
 
-def se(y_true, y_pred):
+def se(y_true, y_pred) -> np.ndarray:
     """
     Calculates the squared error (SE) between the true and predicted values.
 
@@ -53,7 +54,7 @@ def se(y_true, y_pred):
     return (y_true - y_pred)**2
 
 
-def ae(y_true, y_pred):
+def ae(y_true, y_pred) -> np.ndarray:
     """
     Calculates the absolute error (AE) between the true and predicted values.
 
@@ -68,7 +69,7 @@ def ae(y_true, y_pred):
     return np.abs(y_true - y_pred)
 
 
-def mse(y_true, y_pred):
+def mse(y_true, y_pred) -> float:
     """
     Calculates the mean squared error (MSE) between the true and predicted values.
 
@@ -82,7 +83,7 @@ def mse(y_true, y_pred):
     return se(y_true, y_pred).mean()
 
 
-def mae(y_true, y_pred):
+def mae(y_true, y_pred) -> float:
     """
     Calculate the mean absolute error (MAE) between the true and predicted values.
 
@@ -99,7 +100,7 @@ def mae(y_true, y_pred):
     return ae(y_true, y_pred).mean()
 
 
-def fill_zeros_with_last(arr):
+def fill_zeros_with_last(arr: np.ndarray) -> np.ndarray:
     """
     Fills zeros in the input array with the last non-zero value.
 
@@ -115,37 +116,7 @@ def fill_zeros_with_last(arr):
     return arr[prev]
 
 
-# def crps_sample_sparse(y, dat, w, dat_ordered=True, order=None):
-
-#     y = y.astype(np.float32)
-#     dat = dat.astype(np.float32)
-
-#     if dat_ordered:
-#         x = dat
-#     else:
-#         if order is None:
-#             order = np.argsort(dat)
-#         x = dat[order]
-
-#     score_arr = np.zeros((len(y)), dtype=np.float32)
-
-#     for i in range(w.shape[0]):
-#         # wi = w[i].toarray().squeeze()
-#         wi = w[i]
-#         yi = y[i]
-#         # p = np.cumsum(wi)
-#         p = fill_zeros_with_last(sparse_cumsum(wi).toarray().squeeze())
-#         wi = wi.toarray().squeeze()
-#         # a = np.asarray(p - 0.5 * wi).squeeze()
-#         a = (p - 0.5 * wi)
-
-#         indicator = (yi < x).astype(x.dtype)
-#         score_arr[i] = (wi * (indicator - a) * (x - yi)).sum()
-
-#     return 2. * score_arr
-
-
-def crps_sample_sparse2(y, dat, w, dat_ordered=True, order=None):
+def crps_sample_sparse2(y: np.ndarray, dat: np.ndarray, w: csr_matrix, dat_ordered=True, order=None) -> np.ndarray:
     """
     Calculate the Continuous Ranked Probability Score (CRPS) for a given set of sparse samples.
     Improved version of crps_sample_sparse with better performance (only iterates over non-zero elements).
@@ -154,7 +125,7 @@ def crps_sample_sparse2(y, dat, w, dat_ordered=True, order=None):
     Parameters:
     - y (ndarray): Array of true values.
     - dat (ndarray): Array of predicted values.
-    - w (ndarray): Array of weights.
+    - w (csr_matrix): Array of sparse weights.
     - dat_ordered (bool): Flag indicating if the predicted values are already ordered.
     - order (ndarray): Array of indices to order the predicted values.
 
@@ -189,45 +160,15 @@ def crps_sample_sparse2(y, dat, w, dat_ordered=True, order=None):
     return 2. * score_arr
 
 
-# def crps_for_loop(wi, yi, x):
-
-#     wi = wi.toarray().squeeze()
-#     p = np.cumsum(wi)
-#     a = (p - 0.5 * wi)
-
-#     indicator = (yi < x).astype(x.dtype)
-#     return (wi * (indicator - a) * (x - yi)).sum()
-
-# def crps_sample_sparse_parallel(y, dat, w, dat_ordered=True, order=None):
-
-#     y = y.astype(np.float32)
-#     dat = dat.astype(np.float32)
-
-#     if dat_ordered:
-#         x = dat
-#     else:
-#         if order is None:
-#             order = np.argsort(dat)
-#         x = dat[order]
-
-#     # score_arr = np.zeros((len(y)))
-
-#     results = Parallel(n_jobs=-1)(delayed(crps_for_loop)(w[i], y[i], x) for i in range(w.shape[0]))
-
-#     score_arr = np.array(results)
-
-#     return 2. * score_arr
-
-
-def crps_sample(y, dat, w, return_mean=True):
+def crps_sample(y: np.ndarray, dat: np.ndarray, w: np.ndarray, return_mean=True):
     """
     Calculate the Continuous Ranked Probability Score (CRPS) for given samples.
     Implementation based on the R-package 'scoringRules'.
 
     Parameters:
-    - y (numpy.ndarray): Array of true values.
-    - dat (numpy.ndarray): Array of predicted values.
-    - w (numpy.ndarray): Array of weights.
+    - y (numpy.ndarray): Array of true values. Shape: (n_test,).
+    - dat (numpy.ndarray): Array of predicted values. Shape: (n_test,).
+    - w (numpy.ndarray): Array of weights. Shape: (n_test, n_train).
     - return_mean (bool): Flag indicating whether to return the mean CRPS score. Default is True.
 
     Returns:
@@ -263,9 +204,10 @@ def crps_sample(y, dat, w, return_mean=True):
     return score_arr
 
 
-def crps_sample_fast(y, dat, w):
+def crps_sample_fast(y: np.ndarray, dat: np.ndarray, w: np.ndarray) -> np.ndarray:
     """
     Slightly faster version of crps_sample adapted to our specific usecase and structure of w.
+    Same parameters as crps_sample.
     """
 
     order = np.argsort(dat)
@@ -290,9 +232,9 @@ def crps_sample_fast(y, dat, w):
     return 2 * score_arr
 
 
-def crps_sample_unconditional(y, dat):
+def crps_sample_unconditional(y: np.ndarray, dat: np.ndarray) -> np.ndarray:
     """
-    Unconditional version of CRPS calculation,i.e. we're not considering the calculated weights. 
+    Unconditional version of CRPS calculation,i.e., we're not considering the calculated weights. 
     Instead, all training samples are weighted equally.
     See crps_sample for paramter details.
     """
@@ -321,15 +263,16 @@ def crps_sample_unconditional(y, dat):
     return 2 * score_arr
 
 
-def calc_metrics_topk(k, w_hat, y_train, y_test, verbose=False):
+def calc_metrics_topk(k: int, w_hat: np.ndarray, y_train: np.ndarray, y_test: np.ndarray, verbose=False) -> tuple:
     """
     Calculate various metrics for top-k predictions for specific k.
 
     Parameters:
     k (int): The number of top elements to consider.
-    w_hat (array-like): The weight matrix.
-    y_train (array-like): The training labels.
-    y_test (array-like): The test labels.
+    w_hat (array-like): The weight matrix. Shape: (n_test, n_train).
+    y_train (array-like): The training labels. Shape: (n_train,).
+    y_test (array-like): The test labels. Shape: (n_test,).
+    verbose (bool): Flag to control verbosity. Default is False.
 
     Return
     tuple: A tuple containing the following metrics for the given samples:
@@ -392,15 +335,15 @@ def calc_metrics_topk(k, w_hat, y_train, y_test, verbose=False):
     return (r2k, se_test, ae_test, crps_test, corr_test, cov_test, var_y_tk, bias_y_tk, w_topk_sums, y_tk)
 
 
-def calc_metrics_topk_sparse(k, w_hat, y_train, y_test):
+def calc_metrics_topk_sparse(k: int, w_hat: csr_matrix, y_train: np.ndarray, y_test: np.ndarray) -> tuple:
     """
     Calculate various metrics for sparse top-k predictions for specific k.
 
     Parameters:
     k (int): The number of top elements to consider.
-    w_hat (sparse matrix): The weight matrix.
-    y_train (array-like): The training labels.
-    y_test (array-like): The test labels.
+    w_hat (sparse csr matrix): The weight matrix. Shape: (n_test, n_train).
+    y_train (array-like): The training labels. Shape: (n_train,).
+    y_test (array-like): The test labels. Shape: (n_test,).
 
     Return
     tuple: A tuple containing the following metrics for the given samples:
@@ -461,16 +404,23 @@ def calc_metrics_topk_sparse(k, w_hat, y_train, y_test):
         logging.error(f"Error in calculate_metrics: {e}")
 
 
-def topk_looper_sparse(X_test, y_train, y_test, rf, w_hat, k_max=100, k_stepsize=1, verbose=False):
+def topk_looper_sparse(X_test: np.ndarray,
+                       y_train: np.ndarray,
+                       y_test: np.ndarray,
+                       rf: object,
+                       w_hat: csr_matrix,
+                       k_max=100,
+                       k_stepsize=1,
+                       verbose=False) -> dict:
     """
     Calculate various metrics for a Topk RF model for a range of values for k.
 
     Parameters:
-    - X_test (array-like): Test data.
-    - y_train (array-like): Training labels.
-    - y_test (array-like): Test labels.
+    - X_test (array-like): Test data. Shape: (n_test, n_features).
+    - y_train (array-like): Training labels. Shape: (n_train,).
+    - y_test (array-like): Test labels. Shape: (n_test,).
     - rf (object): RF model.
-    - w_hat (array-like): Weight matrix.
+    - w_hat (array-like): Weight matrix. Shape: (n_test, n_train).
     - k_max (int, optional): Maximum value of k for top-k loop. Defaults to 100.
     - k_stepsize (int, optional): Step size for k in top-k loop. Defaults to 1.
     - verbose (bool, optional): Whether to print verbose output. Defaults to False.
@@ -596,16 +546,25 @@ def topk_looper_sparse(X_test, y_train, y_test, rf, w_hat, k_max=100, k_stepsize
     return results
 
 
-def topk_looper(X_test, y_train, y_test, rf, w_hat=None, k_max=100, num_processes=1, batch_size=5000, verbose=False):
+def topk_looper(X_test: np.ndarray,
+                y_train: np.ndarray,
+                y_test: np.ndarray,
+                rf: object,
+                w_hat=None,
+                k_max=100,
+                num_processes=1,
+                batch_size=5000,
+                verbose=False) -> dict:
     """
     Calculate various metrics for a given random forest model on a test dataset.
 
     Parameters:
-    - X_test (array-like): The test dataset.
-    - y_train (array-like): The training labels.
-    - y_test (array-like): The test labels.
-    - rf (RandomForest): The random forest model.
-    - w_hat (array-like, optional): The weights for weighted prediction. Default is None.
+    - X_test (np.ndarray): The test dataset. Shape: (n_test, n_features).
+    - y_train (np.ndarray): The training labels. Shape: (n_train,).
+    - y_test (np.ndarray): The test labels. Shape: (n_test,).
+    - rf (RandomForest): The random forest model. 
+    - w_hat (np.ndarray, optional): The weights for weighted prediction. Default is None. Shape: (n_test, n_train).
+        If None, the function will calculate the weights later on.
     - k_max (int, optional): The maximum value of k for top-k metrics. Default is 100.
     - num_processes (int, optional): The number of processes for parallel computation. Default is 1.
     - batch_size (int, optional): The batch size for prediction. Default is 5000.
@@ -613,16 +572,16 @@ def topk_looper(X_test, y_train, y_test, rf, w_hat=None, k_max=100, num_processe
 
     Returns:
     - results (dict): Dictionary containing various metrics calculated during the top-k loop.
-        - 'r2' (array-like): R^2 values.
-        - 'corr' (array-like): Correlation coefficients (between forecast and true values).
-        - 'cov' (array-like): Covariance values (between forecast and true values).
-        - 'se' (array-like): SE values.
-        - 'ae' (array-like): AE values.
-        - 'crps' (array-like): CRPS values.
-        - 'var' (array-like): Variance (of forecast) values.
-        - 'bias' (array-like): Bias (of forecast) values.
-        - 'pred' (array-like): Predicted values.
-        - 'topk_sums' (array-like): Sum of remaining weights for top k values before normalization.
+        - 'r2' (np.ndarray): R^2 values.
+        - 'corr' (np.ndarray): Correlation coefficients (between forecast and true values).
+        - 'cov' (np.ndarray): Covariance values (between forecast and true values).
+        - 'se' (np.ndarray): SE values.
+        - 'ae' (np.ndarray): AE values.
+        - 'crps' (np.ndarray): CRPS values.
+        - 'var' (np.ndarray): Variance (of forecast) values.
+        - 'bias' (np.ndarray): Bias (of forecast) values.
+        - 'pred' (np.ndarray): Predicted values.
+        - 'topk_sums' (np.ndarray): Sum of remaining weights for top k values before normalization.
     """
 
     all_r2 = []
