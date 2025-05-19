@@ -9,7 +9,6 @@ import os
 from sklearn.model_selection import train_test_split
 from scipy.sparse import save_npz, load_npz
 from sklearn.model_selection import KFold
-import matplotlib.patches as mpatches
 
 cwd = os.getcwd()
 
@@ -35,7 +34,7 @@ import warnings
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-from RF import RandomForestWeight
+from TopkRF.RF import RandomForestWeight
 
 import openml
 

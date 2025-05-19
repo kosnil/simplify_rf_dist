@@ -3,15 +3,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from tqdm import tqdm
-from itertools import product
 import pickle
 import os
 from sklearn.model_selection import train_test_split
 from scipy.sparse import save_npz, load_npz
-from sklearn.model_selection import KFold
-from sklearn.ensemble import RandomForestRegressor
-import matplotlib.patches as mpatches
 
 cwd = os.getcwd()
 
@@ -37,7 +32,7 @@ import warnings
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-from RF import RandomForestWeight
+from TopkRF.RF import RandomForestWeight
 
 import openml
 
