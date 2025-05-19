@@ -19,12 +19,10 @@ We explore the statistical sources of this finding via a stylized analytical mod
 
 ## Dependencies
 This repository contains the code used to generate the results in the paper. The code is written in Python and uses the libraries (as specified in `requirements.txt`):
-- `dask==2024.4.1`
-- `h5py==3.11.0`
 - `joblib==1.4.0`
 - `matplotlib==3.8.4`
 - `numba==0.59.1`
-- `numpy==2.2.5`
+- `numpy==2.2.6`
 - `pandas==2.2.3`
 - `scikit_learn==1.4.2`
 - `scipy==1.15.3`

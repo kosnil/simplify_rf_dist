@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import dask.array as da
 from tqdm import tqdm
 from itertools import product
 import pickle
@@ -67,7 +66,7 @@ df = df.dropna()
 df.shape
 # %%
 relevant_cols = ['survey_year', 'female', 'age', 'n_persons', 'n_children', 'years_educ', 'employed', 'sector']
-y = df['income']  
+y = df['income']
 X = df[relevant_cols]
 
 X = pd.get_dummies(X, columns=['sector'], drop_first=True)
@@ -194,7 +193,6 @@ np.round(y_train[sup_points_w_sorted], 0)
 print(tester[non_dummy_cols + test_emp + test_sector].iloc[i:i + 1].to_latex(float_format='%.1f', index=True))
 print(scen[scen_cols].sort_values('weight', ascending=False).to_latex(float_format='%.1f', index=True))
 
-
 #%%
 # Performance run for different k
 
@@ -222,6 +220,5 @@ for k in k_arr:
 results_df = pd.DataFrame(results, index=['full'] + k_arr)
 print(results_df.to_latex(float_format='%.2f', index=True))
 print(results_df.to_latex(float_format='%.2e', index=True))
-
 
 # %%

@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import dask.array as da
 from tqdm import tqdm
 from itertools import product
 import pickle
