@@ -22,13 +22,12 @@ This repository contains the code used to generate the results in the paper. The
 - `joblib==1.4.0`
 - `matplotlib==3.8.4`
 - `numba==0.59.1`
-- `numpy==2.2.6`
+- `numpy==1.26.4`
 - `pandas==2.2.3`
 - `scikit_learn==1.4.2`
-- `scipy==1.15.3`
+- `scipy==1.13.0`
 - `seaborn==0.13.2`
 - `tqdm==4.66.2`
-
 
 ## Usage
 
