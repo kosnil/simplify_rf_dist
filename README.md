@@ -49,7 +49,7 @@ This repository contains the code to replicate the results in the paper (includi
 ### Method
 The main code that implements the Topk method can be found in the `RF.py` file. The code is organized in a modular way, so you can easily adapt it to your own needs. The main class is `RandomForestWeight`, which is a wrapper around the `RandomForestRegressor` class from `sklearn`. The class contains methods to train the model, predict the test set, and calculate the weights (independent of the choice of $k$, as a byproduct we also implement Meinshausen's Quantile Regression Forests).  
 A first starting point is the `minimal_working_example.ipynb` notebook, which contains a minimal working example of how to use the code. The notebook contains a step-by-step guide to replicate the results in the paper.
-The basic workflow is as follows:
+The basic workflow (assuming you installed the package via `pip`) is as follows:
 
 ```python
 import numpy as np
@@ -65,7 +65,7 @@ X, y = make_regression(n_samples=5000, n_features=20, noise=1, random_state=SEED
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=SEED)
 
 # Create a Topk RF class and train. The RandomForestWeight class is based on the RandomForestRegressor class from sklearn.
-from RF import RandomForestWeight
+from TopkRF.RF import RandomForestWeight
 
 # define hyperparameters for Topk RF
 hyperparams = dict(
