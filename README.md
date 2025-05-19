@@ -82,7 +82,7 @@ Similarly, `utils/plotting_helpers.py` contains functions that are helpful for p
 ### Reproducing Results
 
 To reproduce the results, figures and tables shown in the paper, you can check out the scripts in the files `rf_restrict_k_openml.py`, `rf_hp_tuning.py`, `tuned_score_comparison` and `rf_soep.py`. These scripts contain the code to train, tune, and evaluate models on the OpenML datasets as well as the SOEP dataset. Results, if run, are stored in the `results/` directory. Due to their size, we do not include them here.  
-The notebook `Theoretical Example/Toyexample.ipynb` contains simulations and snippets that generate plots regarding Section 4 in the paper, stored in `Theoretical Example/plots`.
+The notebook `Theoretical Example/Toyexample.ipynb` contains simulations and snippets that generate plots regarding Section 4 in the paper, stored in `Theoretical Example/plots/`.
 
 
 ## Overview of Directory Structure
@@ -90,20 +90,20 @@ The notebook `Theoretical Example/Toyexample.ipynb` contains simulations and sni
 simplify_rf_dist/  
 ├── README.md  
 ├── requirements.txt  
+├── TopkRF/
+│   ├── RF.py  
+│   ├── utils/     
+│   │   ├── plotting_helpers.py  
+│   │   ├── score_utils.py  
+│   │   ├── sparse_utils.py     
 ├── data/        
 │   ├── soep_prep/          
 │   │   ├── prepare_soep_data.R  
-│   └── ...                
-├── utils/                  
-│   ├── plotting_helpers.py  
-│   ├── score_utils.py  
-│   ├── sparse_utils.py  
-│   └── ...                 
+│   └── ...                       
 ├── results/                  
 ├── Plots/                  
 ├── weight_storage/         
-├── minimal_working_example.ipynb  
-├── RF.py                   
+├── minimal_working_example.ipynb                   
 ├── rf_hp_tuning.py         
 ├── rf_restrict_k_openml.py  
 ├── rf_soep.py              
