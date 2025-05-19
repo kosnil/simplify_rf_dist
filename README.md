@@ -32,7 +32,10 @@ This repository contains the code used to generate the results in the paper. The
 
 ## Usage
 
-This repository contains the code to replicate the results in the paper (including training, tuning and evaluation) and to apply Topk to your own data. The main code can be found in the `RF.py` file. The code is organized in a modular way, so you can easily adapt it to your own needs. The main class is `RandomForestWeight`, which is a wrapper around the `RandomForestRegressor` class from `sklearn`. The class contains methods to train the model, predict the test set, and calculate the weights (independent of the choice of $k$, as a byproduct we also implement Meinshausen's Quantile Regression Forests).  
+This repository contains the code to replicate the results in the paper (including training, tuning and evaluation) and to apply Topk to your own data.
+
+### Method
+The main code that implements the Topk method can be found in the `RF.py` file. The code is organized in a modular way, so you can easily adapt it to your own needs. The main class is `RandomForestWeight`, which is a wrapper around the `RandomForestRegressor` class from `sklearn`. The class contains methods to train the model, predict the test set, and calculate the weights (independent of the choice of $k$, as a byproduct we also implement Meinshausen's Quantile Regression Forests).  
 A first starting point is the `minimal_working_example.ipynb` notebook, which contains a minimal working example of how to use the code. The notebook contains a step-by-step guide to replicate the results in the paper.
 The basic workflow is as follows:
 
@@ -69,14 +72,20 @@ k = 5
 y_hat_k, w_k = rf.weight_predict(X_test, top_k=k, return_weights=True)
 ```
 
-To reproduce the results in the paper, you can run the scripts in the files `rf_restrict_k_openml.py`, `rf_hp_tuning.py`, `tuned_score_comparison` and `rf_soep.py`. These scripts contain the code to train, tune, and evaluate models on the OpenML datasets as well as the SOEP dataset. Results are stored in the `results/` directory.
-
-To be as efficient as possible, we calculate the weights in parallel using numba. 
+To be more efficient, we calculate the weights in parallel using numba. 
 As these calculations take place in-memory, this can lead to memory issues for larger datasets. To avoid this, we recommend using the `sparse` versions of the functions. We refer to `minimal_working_example.ipynb` for details.
 
+Various tools for evaluating the forecasts are located in `utils/score_utils.py`, including the scoring rule implementations and the evaluation loopers.  
+`utils/sparse_utils.py` contains a few helper functions needed to process sparse weight matrices.  
+Similarly, `utils/plotting_helpers.py` contains functions that are helpful for plotting the results.
+
+### Reproducing Results
+
+To reproduce the results, figures and tables shown in the paper, you can check out the scripts in the files `rf_restrict_k_openml.py`, `rf_hp_tuning.py`, `tuned_score_comparison` and `rf_soep.py`. These scripts contain the code to train, tune, and evaluate models on the OpenML datasets as well as the SOEP dataset. Results, if run, are stored in the `results/` directory. Due to their size, we do not include them here.  
+The notebook `Theoretical Example/Toyexample.ipynb` contains simulations and snippets that generate plots regarding Section 4 in the paper, stored in `Theoretical Example/plots`.
 
 
-## Directory Structure
+## Overview of Directory Structure
 ```
 simplify_rf_dist/  
 ├── README.md  
