@@ -350,9 +350,11 @@ for row in ax:
         #     fig.delaxes(ax[-1][-1])
         #     break
 # %%
-
+# Define which ks to consider
 considered_ks = [3, 5, 10, 20, 50]
+# Loss/Metric to consider
 loss = 'crps'
+# Metric label
 loss_label = loss.upper() if loss == 'crps' else 'M' + loss.upper()
 
 df_results = {}
@@ -371,6 +373,7 @@ df_results = pd.DataFrame(df_results).T
 
 print(df_results[[col for col in df_results.columns if "Skill" not in col]].to_latex(float_format="%.4f"))
 #%%
+# Calculate relative score
 skill_cols = [col for col in df_results.columns if "Rel" in col]
 df_results[skill_cols] = df_results[skill_cols].astype(float)
 
@@ -394,6 +397,7 @@ print(df_styled.to_latex())
 df_styled
 
 #%%
+# Calculate unconditional CRPS for Figure 2 in the paper
 unconditional_crps = []
 
 for i, ds in enumerate(paper_ds):
@@ -471,7 +475,7 @@ lime_patch = mpatches.Patch(color=lime, label='Top3')
 ax.legend(handles=[blue_patch, och_patch, lime_patch], prop={'size': 10}, loc='center left', bbox_to_anchor=(1, 0.5))
 
 fig.tight_layout()
-fig.savefig(f'./Plots/openml/fullmaecrpsratio_top3crps_dotted.pdf', dpi=500)
+#fig.savefig(f'./Plots/openml/fullmaecrpsratio_top3crps_dotted.pdf', dpi=500)
 #%%
 if HP_TUNED_RESULTS is True:
 
