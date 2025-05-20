@@ -3,9 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import pickle
 import os
-from sklearn.model_selection import train_test_split
 from scipy.sparse import save_npz, load_npz
 
 pd.options.mode.copy_on_write = True
@@ -27,8 +25,8 @@ plt.rcParams.update({
     'axes.linewidth': 0.1
 })
 
-from utils.plotting_helpers import *
-from utils.score_utils import *
+from plotting_helpers import *
+from TopkRF.utils.score_utils import *
 
 import warnings
 

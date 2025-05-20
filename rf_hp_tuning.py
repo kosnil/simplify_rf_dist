@@ -27,8 +27,8 @@ plt.rcParams.update({
     'axes.linewidth': 0.1
 })
 
-from utils.plotting_helpers import *
-from utils.score_utils import *
+from plotting_helpers import *
+from TopkRF.utils.score_utils import *
 
 import warnings
 
