@@ -56,7 +56,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_regression
 
-# Set seed for reproducibility
+# Set seed
 SEED = 7531
 np.random.seed(SEED)
 
@@ -91,9 +91,9 @@ Various tools for evaluating the forecasts are located in `utils/score_utils.py`
 `utils/sparse_utils.py` contains a few helper functions needed to process sparse weight matrices.  
 Similarly, `utils/plotting_helpers.py` contains functions that are helpful for plotting the results.
 
-### Reproducing Results
+### Replicate Results
 
-To reproduce the results, figures and tables shown in the paper, you can check out the scripts in the files `rf_restrict_k_openml.py`, `rf_hp_tuning.py`, `tuned_score_comparison` and `rf_soep.py`. These scripts contain the code to train, tune, and evaluate models on the OpenML datasets as well as the SOEP dataset. Results, if run, are stored in the `results/` directory. Due to their size, we do not include them here.  
+To replicate the results, figures and tables shown in the paper, you can check out the scripts in the files `rf_restrict_k_openml.py`, `rf_hp_tuning.py`, `tuned_score_comparison` and `rf_soep.py`. These scripts contain the code to train, tune, and evaluate models on the OpenML datasets as well as the SOEP dataset. Results, if run, are stored in the `results/` directory. Due to their size, we do not include them here.  
 The notebook `Theoretical Example/Toyexample.ipynb` contains simulations and snippets that generate plots regarding Section 4 in the paper, stored in `Theoretical Example/plots/`.
 
 
