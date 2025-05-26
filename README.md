@@ -48,7 +48,7 @@ This repository contains the code to replicate the results in the paper (includi
 
 ### Method
 The main code that implements the Topk method can be found in the `RF.py` file. The code is organized in a modular way, so you can easily adapt it to your own needs. The main class is `RandomForestWeight`, which is a wrapper around the `RandomForestRegressor` class from `sklearn`. The class contains methods to train the model, predict the test set, and calculate the weights (independent of the choice of $k$, as a byproduct we also implement Meinshausen's Quantile Regression Forests).  
-A first starting point is the `minimal_working_example.ipynb` notebook, which contains a minimal working example of how to use the code. The notebook contains a step-by-step guide to replicate the results in the paper.
+A first starting point is the `tutorial.ipynb` notebook, which contains a minimal working example of how to use the code. 
 The basic workflow (assuming you installed the package via `pip`) is as follows:
 
 ```python
@@ -85,7 +85,7 @@ y_hat_k, w_k = rf.weight_predict(X_test, top_k=k, return_weights=True)
 ```
 
 To be more efficient, we calculate the weights in parallel using numba. 
-As these calculations take place in-memory, this can lead to memory issues for larger datasets. To avoid this, we recommend using the `sparse` versions of the functions. We refer to `minimal_working_example.ipynb` for details.
+As these calculations take place in-memory, this can lead to memory issues for larger datasets. To avoid this, we recommend using the `sparse` versions of the functions. We refer to `tutorial.ipynb` for details.
 
 Various tools for evaluating the forecasts are located in `utils/score_utils.py`, including the scoring rule implementations and the evaluation loopers.  
 `utils/sparse_utils.py` contains a few helper functions needed to process sparse weight matrices.  
@@ -115,7 +115,7 @@ simplify_rf_dist/
 ├── results/                  
 ├── Plots/                  
 ├── weight_storage/         
-├── minimal_working_example.ipynb                   
+├── tutorial.ipynb                   
 ├── rf_hp_tuning.py         
 ├── rf_restrict_k_openml.py  
 ├── rf_soep.py              
