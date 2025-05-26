@@ -85,7 +85,7 @@ N_TREES = 1000
 
 HP_TUNING = False
 BAGGED_TREES = True
-GRID_SEARCH = True
+GRID_SEARCH = False
 
 STANDARDIZE_Y = False
 
@@ -146,8 +146,12 @@ for i, ds in enumerate(paper_ds):
 
     gc.collect()
 
-    y_train = y_train.astype(np.float32)
-    y_test = y_test.astype(np.float32)
+    if len(y_train) > 100_000:
+        y_train = y_train.astype(np.float32)
+        y_test = y_test.astype(np.float32)
+    else:
+        y_train = y_train.astype(np.float64)
+        y_test = y_test.astype(np.float64)
 
     if HP_TUNING is True:
 
@@ -287,10 +291,10 @@ used_ds = []
 
 considered_ks = [3, 5, 10, 20, 50]
 
-HP_TUNED_RESULTS = True
-GRID_SEARCH_RESULTS = True
+HP_TUNED_RESULTS = False
+GRID_SEARCH_RESULTS = False
 
-STANDARDIZE_Y_RESULTS = True
+STANDARDIZE_Y_RESULTS = False
 
 for ds in paper_ds:
     if HP_TUNED_RESULTS is True:
@@ -353,7 +357,7 @@ for row in ax:
 # Define which ks to consider
 considered_ks = [3, 5, 10, 20, 50]
 # Loss/Metric to consider
-loss = 'crps'
+loss = 'crps'  # 'se', 'ae', 'crps', 'topk_sums'
 # Metric label
 loss_label = loss.upper() if loss == 'crps' else 'M' + loss.upper()
 

@@ -540,6 +540,7 @@ class RandomForestWeight:
         - w_all (array-like, optional): The weight matrix. Default is None.
         - top_k (int, optional): The number of top k rows to consider. Default is None.
         - batch_size (int, optional): The batch size for calculating quantiles in batches. Default is 5000.
+            DEPRECATED, not used anymore.
         - verbose (bool, optional): Whether to print verbose output. Default is False.
 
         Returns:

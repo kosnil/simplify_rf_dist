@@ -602,7 +602,7 @@ def topk_looper(X_test: np.ndarray,
     else:
         y_hat = rf.predict(X_test)
 
-    y_hat_med = rf.quantile_predict(q=.5, w_all=w_hat, batch_size=batch_size)
+    y_hat_med = rf.quantile_predict(q=.5, w_all=w_hat)  #, batch_size=batch_size)
 
     if verbose:
         print("Done Training. Calculating Metrics")
