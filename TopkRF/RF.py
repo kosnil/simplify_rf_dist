@@ -227,23 +227,32 @@ class RandomForestWeight:
                 - The second array contains the count of sampled indices for each tree in the RF.
         """
 
-        n_samples = len(self.X_train)
+        if 'bootstrap' in self.hyperparams and self.hyperparams['bootstrap'] is False:
 
-        n_samples_bootstrap = forest_utils._get_n_samples_bootstrap(n_samples, self.rf.max_samples)
+            inbag = np.ones((self.n_trees, len(self.X_train)), dtype=np.int16)
+            return np.arange(len(self.X_train)), inbag
 
-        sampled_indices_trees = []
-        sampled_indices_trees_count = []
+        else:
 
-        for estimator in self.rf.estimators_:
+            n_samples = len(self.X_train)
 
-            sampled_indices = forest_utils._generate_sample_indices(estimator.random_state, n_samples,
-                                                                    n_samples_bootstrap)
-            sampled_indices_trees.append(sampled_indices)
+            n_samples_bootstrap = forest_utils._get_n_samples_bootstrap(n_samples, self.rf.max_samples)
 
-            sampled_indices_hist = np.bincount(sampled_indices, minlength=n_samples_bootstrap)
-            sampled_indices_trees_count.append(sampled_indices_hist)
+            sampled_indices_trees = []
+            sampled_indices_trees_count = []
 
-        return np.vstack(sampled_indices_trees), np.vstack(sampled_indices_trees_count)
+            for estimator in self.rf.estimators_:
+
+                sampled_indices = forest_utils._generate_sample_indices(estimator.random_state, n_samples,
+                                                                        n_samples_bootstrap)
+                sampled_indices_trees.append(sampled_indices)
+
+                sampled_indices_hist = np.bincount(sampled_indices, minlength=n_samples_bootstrap)
+                sampled_indices_trees_count.append(sampled_indices_hist)
+
+            return np.vstack(sampled_indices_trees), np.vstack(sampled_indices_trees_count)
+            
+
 
     @staticmethod
     @njit(parallel=True)
