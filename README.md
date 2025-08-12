@@ -15,6 +15,9 @@ This sparsification step greatly improves the interpretability of RF predictions
 In empirical experiments, we document that the simplified predictions can be similar to or exceed the original ones in terms of forecasting performance.
 We explore the statistical sources of this finding via a stylized analytical model of RFs. The model suggests that simplification is particularly promising if the unknown true forecast distribution contains many small weights that are estimated imprecisely.
 
+<img width="2554" height="1735" alt="grafik" src="https://github.com/user-attachments/assets/48d2f091-3e3f-4b34-943f-9cf786de3b2d" />
+
+
 ## Install
 
 To use Topk you can either clone the repository like so:
