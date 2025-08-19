@@ -123,11 +123,11 @@ def crps_sample_sparse2(y: np.ndarray, dat: np.ndarray, w: csr_matrix, dat_order
     Based on the R-package 'scoringRules'.
 
     Parameters:
-    - y (ndarray): Array of true values.
-    - dat (ndarray): Array of predicted values.
-    - w (csr_matrix): Array of sparse weights.
+    - y (numpy.ndarray): Array of outcomes to be testes. Shape: (n_test,).
+    - dat (numpy.ndarray): Array of training outcomes.  Shape: (n_train,).
+    - w (csr_matrix): Array of sparse weights (these are the estimated values to be evaluated). 
     - dat_ordered (bool): Flag indicating if the predicted values are already ordered.
-    - order (ndarray): Array of indices to order the predicted values.
+    - order (numpy.ndarray): Array of indices to order the predicted values.
 
     Returns:
     - ndarray: Array of CRPS scores.
@@ -166,9 +166,9 @@ def crps_sample(y: np.ndarray, dat: np.ndarray, w: np.ndarray, return_mean=True)
     Implementation based on the R-package 'scoringRules'.
 
     Parameters:
-    - y (numpy.ndarray): Array of true values. Shape: (n_test,).
-    - dat (numpy.ndarray): Array of predicted values. Shape: (n_test,).
-    - w (numpy.ndarray): Array of weights. Shape: (n_test, n_train).
+    - y (numpy.ndarray): Array of outcomes to be testes. Shape: (n_test,).
+    - dat (numpy.ndarray): Array of training outcomes.  Shape: (n_train,).
+    - w (numpy.ndarray): Array of weights (these are the estimated values to be evaluated). Shape: (n_test, n_train).
     - return_mean (bool): Flag indicating whether to return the mean CRPS score. Default is True.
 
     Returns:
@@ -207,7 +207,7 @@ def crps_sample(y: np.ndarray, dat: np.ndarray, w: np.ndarray, return_mean=True)
 def crps_sample_fast(y: np.ndarray, dat: np.ndarray, w: np.ndarray) -> np.ndarray:
     """
     Slightly faster version of crps_sample adapted to our specific usecase and structure of w.
-    Same parameters as crps_sample.
+    See crps_sample for details on parameters.
     """
 
     order = np.argsort(dat)
@@ -236,7 +236,7 @@ def crps_sample_unconditional(y: np.ndarray, dat: np.ndarray) -> np.ndarray:
     """
     Unconditional version of CRPS calculation,i.e., we're not considering the calculated weights. 
     Instead, all training samples are weighted equally.
-    See crps_sample for paramter details.
+    See crps_sample for details on parameters.
     """
 
     order = np.argsort(dat)
