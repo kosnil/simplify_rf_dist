@@ -2,7 +2,7 @@
 
 This repository contains the implementation of experiments from the paper titled "Simplifying Random Forests' Probabilistic Forecasts" by [Nils Koster](https://methods.stat.kit.edu/mitarbeiter_3248.php) (KIT, Broad Institute of MIT & Harvard) and [Fabian Krüger](https://ewifo.stat.kit.edu/21_57.php) (KIT).  
 
-You can find the paper on arXiv [here](https://arxiv.org/abs/2408.12332).
+You can find the paper [here](https://doi.org/10.1080/00031305.2025.2552284) (alt. on arXiv [here](https://arxiv.org/abs/2408.12332)).
 
 
 
